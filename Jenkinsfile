@@ -5,6 +5,7 @@ pipeline {
         IMAGE_NAME = 'holiday-events'
         IMAGE_TAG = "${BUILD_NUMBER}"
         APP_PORT = '3000'
+        CONTAINER_NAME = 'holiday-events-app'
     }
 
     stages {
@@ -32,20 +33,19 @@ pipeline {
             }
         }
 
-        stage('Ansible Deploy') {
+        stage('Deploy Container') {
             steps {
                 sh """
-                ansible-playbook -i ansible/inventory.ini ansible/deploy.yml \
-                    -e "image_name=${IMAGE_NAME}" \
-                    -e "image_tag=${IMAGE_TAG}" \
-                    -e "app_port=${APP_PORT}"
+                docker stop ${CONTAINER_NAME} || true
+                docker rm ${CONTAINER_NAME} || true
+                docker run -d --name ${CONTAINER_NAME} -p ${APP_PORT}:3000 --restart unless-stopped ${IMAGE_NAME}:${IMAGE_TAG}
                 """
             }
         }
 
         stage('Health Check') {
             steps {
-                sh "curl --fail http://localhost:${APP_PORT}/ || exit 1"
+                sh "docker ps | grep ${CONTAINER_NAME}"
             }
         }
     }

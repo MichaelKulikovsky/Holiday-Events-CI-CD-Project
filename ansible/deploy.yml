@@ -1,0 +1,34 @@
+---
+- name: Deploy Holiday Events Container
+  hosts: target_servers
+  gather_facts: no
+  vars:
+    image_name: "{{ image_name }}"
+    image_tag: "{{ image_tag }}"
+    app_port: "{{ app_port | default('3000') }}"
+    container_name: "holiday-events-app"
+
+  tasks:
+    - name: Pull Docker Image
+      command: "docker pull {{ image_name }}:{{ image_tag }}"
+
+    - name: Stop existing container
+      command: "docker stop {{ container_name }}"
+      failed_when: false
+
+    - name: Remove existing container
+      command: "docker rm {{ container_name }}"
+      failed_when: false
+
+    - name: Run new Docker container
+      command: >
+        docker run -d 
+        --name {{ container_name }} 
+        -p {{ app_port }}:3000 
+        --restart unless-stopped 
+        {{ image_name }}:{{ image_tag }}
+
+    - name: Verify container status
+      command: "docker ps --filter name={{ container_name }} --format '{{ '{{' }}.Status{{ '}}' }}'"
+      register: container_status
+      failed_when: "'Up' not in container_status.stdout"

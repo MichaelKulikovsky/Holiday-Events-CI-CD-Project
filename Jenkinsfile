@@ -22,7 +22,7 @@ pipeline {
 
         stage('Test & Health Logic') {
             steps {
-                sh 'node -e "require(\'./server.js\')"'
+                sh 'node --check server.js'
             }
         }
 

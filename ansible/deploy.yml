@@ -1,5 +1,5 @@
 ---
-- name: Deploy Holiday Events Container
+- name: Deploy Holiday Events Container Locally
   hosts: target_servers
   gather_facts: no
   vars:
@@ -9,9 +9,6 @@
     container_name: "holiday-events-app"
 
   tasks:
-    - name: Pull Docker Image
-      command: "docker pull {{ image_name }}:{{ image_tag }}"
-
     - name: Stop existing container
       command: "docker stop {{ container_name }}"
       failed_when: false
